@@ -80,7 +80,7 @@ const ListingDetailPage: React.FC<ListingDetailPageProps> = ({ listing }) => {
           
           {/* Details & Actions Card */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 bg-gray-50 p-6 rounded-lg shadow-md">
+            <div className="sticky top-6 bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
               <div className="flex justify-between items-center">
                  <p className="text-3xl font-bold text-gray-900">${listing.price}<span className="text-base font-normal text-gray-500">/month</span></p>
                  <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full capitalize">{listing.roomType}</span>

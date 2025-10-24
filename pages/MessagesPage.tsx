@@ -81,8 +81,10 @@ const MessagesPage: React.FC<MessagesPageProps> = ({ recipientId }) => {
     );
   }
 
+  const heightClass = currentUser.role === 'student' ? 'h-screen' : 'h-[calc(100vh-4rem)]';
+
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-white">
+    <div className={`flex ${heightClass} bg-white`}>
       {/* Sidebar - Conversation List */}
       <aside className={`w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 flex flex-col ${activeConversationId && 'hidden md:flex'}`}>
         <div className="p-4 border-b">
@@ -127,8 +129,8 @@ const MessagesPage: React.FC<MessagesPageProps> = ({ recipientId }) => {
             <div className="flex-grow p-4 overflow-y-auto bg-gray-50">
                 {activeMessages.map(msg => (
                     <div key={msg.id} className={`flex ${msg.senderId === currentUser.id ? 'justify-end' : 'justify-start'} mb-4`}>
-                        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${msg.senderId === currentUser.id ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-800'}`}>
-                           <p>{msg.content}</p>
+                        <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${msg.senderId === currentUser.id ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-800'}`}>
+                           <p className="text-sm">{msg.content}</p>
                         </div>
                     </div>
                 ))}

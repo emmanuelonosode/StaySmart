@@ -1,9 +1,9 @@
-
 import React, { useState, useCallback, useMemo } from 'react';
 import { User, Role, Listing, Message, Review } from './types';
 // FIX: Import MOCK_MESSAGES to resolve reference error.
 import { MOCK_LISTINGS, MOCK_USERS, MOCK_MESSAGES, MOCK_REVIEWS } from './data/mock';
 import Header from './components/Header';
+import StudentSidebar from './components/StudentSidebar';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import StudentDashboard from './pages/StudentDashboard';
@@ -30,6 +30,7 @@ export interface AppContextType {
   updateUser: (updatedUser: User) => void;
   reviews: Review[];
   addReview: (review: Omit<Review, 'id' | 'timestamp' | 'studentId'>) => void;
+  currentPage: Page;
 }
 
 export const AppContext = React.createContext<AppContextType | null>(null);
@@ -159,7 +160,8 @@ const App: React.FC = () => {
     updateUser,
     reviews,
     addReview,
-  }), [currentUser, navigateTo, listings, bookmarks, messages, users, reviews]);
+    currentPage,
+  }), [currentUser, navigateTo, listings, bookmarks, messages, users, reviews, currentPage]);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -187,14 +189,27 @@ const App: React.FC = () => {
         return <LandingPage />;
     }
   };
+  
+  const isStudentView = currentUser && currentUser.role === 'student';
 
   return (
     <AppContext.Provider value={contextValue}>
       <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
-        <Header onLogout={handleLogout} />
-        <main className="pt-16">
-          {renderPage()}
-        </main>
+        {isStudentView ? (
+          <div className="flex">
+            <StudentSidebar onLogout={handleLogout} />
+            <main className="flex-1 ml-64 h-screen overflow-y-auto">
+              {renderPage()}
+            </main>
+          </div>
+        ) : (
+          <>
+            <Header onLogout={handleLogout} />
+            <main className="pt-16">
+              {renderPage()}
+            </main>
+          </>
+        )}
       </div>
     </AppContext.Provider>
   );

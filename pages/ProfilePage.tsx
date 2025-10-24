@@ -1,6 +1,7 @@
-import React, { useContext, useState, useMemo, useEffect } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import { AppContext, AppContextType } from '../App';
-import { ShieldCheckIcon, StarIcon, EditIcon } from '../components/icons';
+import { ShieldCheckIcon, StarIcon, EditIcon, CameraIcon } from '../components/icons';
+import { User } from '../types';
 
 interface ProfilePageProps {
   userId?: number;
@@ -10,7 +11,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
   const { currentUser, users, updateUser, navigateTo, reviews, addReview } = useContext(AppContext) as AppContextType;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState('');
+  const [draftProfile, setDraftProfile] = useState<Pick<User, 'name' | 'profilePicture'> | null>(null);
   
   const [newReviewRating, setNewReviewRating] = useState(0);
   const [newReviewComment, setNewReviewComment] = useState('');
@@ -28,19 +29,35 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
       .sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [reviews, profileUser]);
 
-  useEffect(() => {
+  const handleEditClick = () => {
     if (profileUser) {
-        setEditedName(profileUser.name);
+        setDraftProfile({
+            name: profileUser.name,
+            profilePicture: profileUser.profilePicture,
+        });
+        setIsEditing(true);
     }
-  }, [profileUser]);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setDraftProfile(null);
+  };
 
   const handleSaveProfile = () => {
-    if (profileUser && editedName) {
-        // Simulate picture change by altering the seed
-        const newProfilePicture = `https://picsum.photos/seed/${editedName}/${Date.now()}/100/100`;
-        updateUser({ ...profileUser, name: editedName, profilePicture: newProfilePicture });
-        setIsEditing(false);
+    if (profileUser && draftProfile) {
+        updateUser({ ...profileUser, ...draftProfile });
+        handleCancelEdit();
     }
+  };
+
+  const handlePictureChange = () => {
+      if (draftProfile) {
+          const newSeed = draftProfile.name || 'new-user';
+          const newProfilePicture = `https://picsum.photos/seed/${newSeed}/${Date.now()}/128/128`;
+          // FIX: Corrected variable name from `profilePicture` to `newProfilePicture`.
+          setDraftProfile({ ...draftProfile, profilePicture: newProfilePicture });
+      }
   };
   
   const handleStudentVerify = (e: React.FormEvent) => {
@@ -126,13 +143,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-        <div className="px-4 py-5 sm:px-6">
+        <div className={`px-4 py-5 sm:px-6 transition-colors duration-300 ${isEditing ? 'bg-gray-50' : 'bg-white'}`}>
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-4">
-              <img className="h-24 w-24 rounded-full" src={profileUser.profilePicture} alt={`${profileUser.name}'s profile`} />
+              <div className="relative">
+                <img className="h-24 w-24 rounded-full" src={isEditing ? draftProfile?.profilePicture : profileUser.profilePicture} alt={`${profileUser.name}'s profile`} />
+                {isEditing && (
+                    <button 
+                        onClick={handlePictureChange}
+                        className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full shadow-md hover:bg-gray-200 transition-colors"
+                        title="Change picture"
+                    >
+                        <CameraIcon className="w-5 h-5 text-gray-600" />
+                    </button>
+                )}
+              </div>
               <div className="pt-2">
-                {isEditing ? (
-                    <input type="text" value={editedName} onChange={e => setEditedName(e.target.value)} className="text-2xl font-bold text-gray-900 border-b-2" />
+                {isEditing && draftProfile ? (
+                    <input type="text" value={draftProfile.name} onChange={e => setDraftProfile({...draftProfile, name: e.target.value})} className="text-2xl font-bold text-gray-900 p-1 -ml-1 rounded-md border-2 border-purple-300 focus:border-purple-500 focus:ring-purple-500 outline-none bg-white" />
                 ) : (
                     <h1 className="text-2xl font-bold text-gray-900">{profileUser.name}</h1>
                 )}
@@ -141,14 +169,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
               </div>
             </div>
             {isOwnProfile && !isEditing && (
-                <button onClick={() => setIsEditing(true)} className="flex items-center space-x-2 px-3 py-1.5 border rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">
-                    <EditIcon className="w-4 h-4"/><span>Edit Profile</span>
+                <button onClick={handleEditClick} className="flex items-center space-x-2 px-3 py-1.5 border rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-colors">
+                    <EditIcon className="w-4 h-4 text-gray-400"/><span>Edit Profile</span>
                 </button>
             )}
           </div>
           {isEditing && (
-            <div className="mt-4 flex justify-end space-x-3">
-                 <button onClick={() => setIsEditing(false)} className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+            <div className="mt-6 flex justify-end space-x-3">
+                 <button onClick={handleCancelEdit} className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
                  <button onClick={handleSaveProfile} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">Save Changes</button>
             </div>
           )}
