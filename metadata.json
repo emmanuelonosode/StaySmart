@@ -1,0 +1,5 @@
+{
+  "name": "StaySmart",
+  "description": "A sleek, modern real estate web app targeted at university students looking for off-campus housing. It features role-based access for tenants and landlords, listing management, and a clean, minimalist design.",
+  "requestFramePermissions": []
+}
